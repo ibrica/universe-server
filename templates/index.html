@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>{{title}}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div id="alerts"></div>
+    <div class="page">
+        <h1>{{title}}</h1>
+        <br>
+        <div id="settings">
+            <div class="dropdown">
+                Environments:
+                <button id="btnEnv" class="btn btn-default dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown">Choose your environment
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu envs">
+                    <li><a href="pong">Pong</a></li>
+                    <li><a href="Neon-v1-race">Neon Race</a></li>
+                    <li><a href="dusk-drive-v0">Dusk drive</a></li>
+                </ul>
+            </div><br>
+            <div class="dropdown">
+                Models:
+                <button id="btnModel" class="btn btn-default dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown">Choose your model
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu models">
+                    <li><a href="ES">Evolution strategies</a></li>
+                    <li><a href="A3C">Actor critic</a></li>
+                </ul>
+            </div><br>
+            <button type="button" class="btn btn-primary btn-lg" id="trainBtn">Train</button> &nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-primary btn-lg" id="playBtn">Play</button>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
