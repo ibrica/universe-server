@@ -6,7 +6,8 @@ import sys
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-from models import ActorCritic
+from models.A3C import ActorCritic
+from models.ES import ES
 from torch.autograd import Variable
 from torchvision import datasets, transforms
 
