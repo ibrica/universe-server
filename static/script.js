@@ -38,4 +38,11 @@
               $("#btnEnv").val($(this).attr("href"));
            });
         });
+                $(function(){
+            $(".workers li a").click(function(e){
+              e.preventDefault();
+              $("#btnWorkers").html($(this).text()+'<span class="caret"></span>');
+              $("#btnWorkers").val($(this).attr("href"));
+           });
+        });
      });

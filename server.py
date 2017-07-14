@@ -1,6 +1,7 @@
 # imports
 from flask import Flask, render_template, request
-from train import ES_train, A3C_train
+from trainings.A3C_train import A3C_train
+from trainings.ES_train import ES_train
 
 
 # create app
@@ -18,17 +19,15 @@ def train():
     """Start training of the network"""
     model = request.form['model']
     env = request.form['env']
+    num_processes = request.form['processes']
     if model == "A3C":
-        pass:
+        A3C_train(env, num_processes)
     elif model == "ES":
-        pass:
+        ES_train(env)
 
 @app.route('/play', methods = ['POST'] )
 def play():
     """Start playing environment"""
     model = request.form['model']
     env = request.form['env']
-        if model == "A3C":
-        pass:
-    elif model == "ES":
-        pass:
+    play()

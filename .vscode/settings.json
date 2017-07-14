@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "/home/ibritvic/Development/miniconda3/envs/universe-server/bin/python"
+    "python.pythonPath": "/home/ibritvic/Development/miniconda3/envs/universe-server/bin/python",
+    "python.linting.pylintPath": "pylint",
+    "python.linting.pylintArgs": ["--extension-pkg-whitelist=numpy,pytorch"]
 }

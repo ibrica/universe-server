@@ -1,4 +1,3 @@
-#https://stackoverflow.com/questions/42703500/best-way-to-save-a-trained-model-in-pytroch
 import math
 import os
 import sys
@@ -6,11 +5,53 @@ import sys
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.multiprocessing as mp
+from envs import create_env
 from models.A3C import ActorCritic
-from models.ES import ES
 from torch.autograd import Variable
 from torchvision import datasets, transforms
+from envs import create_env
+import argparse
 
+
+def A3C_train(env_name, num_processes):
+    os.environ['OMP_NUM_THREADS'] = '1'
+
+    # set parameters as namespace object and give them values
+    args = argparse.Namespace()
+    args.seed = 1 # default should be possible set on web page
+    args.env_name = env_name
+    args.num_processes = num_processes
+    args.lr = 0.0001 # learnig rate
+    args.gamma = 0.99 # Discount factor for rewards
+    args.tau = 1.0 # GAE parameter
+    args.num_steps = 20 # Number of forward steps
+    args.max_episode_length = 10000 # maximum length of an episode 
+    args.no_shared = False # Use shared model
+    
+
+ 
+    torch.manual_seed(args.seed)
+
+    env = create_env(env_name, client_id="A3C1",remotes=1) # Local docker container
+    shared_model = ActorCritic(env.observation_space.shape[0], env.action_space)
+    shared_model.share_memory()
+
+    # Not using Adam optimisation for now
+    optimizer = None
+
+    processes = []
+
+    p = mp.Process(target=test, args=(num_processes, args, shared_model))
+    p.start()
+    processes.append(p)
+
+    for rank in range(0, num_processes):
+        p = mp.Process(target=train, args=(rank, args, shared_model, optimizer))
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
 
 def ensure_shared_grads(model, shared_model):
     for param, shared_param in zip(model.parameters(), shared_model.parameters()):
@@ -19,10 +60,10 @@ def ensure_shared_grads(model, shared_model):
         shared_param._grad = param.grad
 
 
-def A3C_train(rank, args, shared_model, optimizer=None):
+def train(rank, args, shared_model, optimizer=None):
     torch.manual_seed(args.seed + rank)
 
-    env = create_atari_env(args.env_name)
+    env = create_env(args.env_name)
     env.seed(args.seed + rank)
 
     model = ActorCritic(env.observation_space.shape[0], env.action_space)
@@ -110,35 +151,3 @@ def A3C_train(rank, args, shared_model, optimizer=None):
 
         ensure_shared_grads(model, shared_model)
         optimizer.step()
-
-
-    def run():
-         os.environ['OMP_NUM_THREADS'] = '1'  
-  
-    args = parser.parse_args()
-
-    torch.manual_seed(args.seed)
-
-    env = create_atari_env(args.env_name)
-    shared_model = ActorCritic(
-        env.observation_space.shape[0], env.action_space)
-    shared_model.share_memory()
-
-    if args.no_shared:
-        optimizer = None
-    else:
-        optimizer = my_optim.SharedAdam(shared_model.parameters(), lr=args.lr)
-        optimizer.share_memory()
-
-    processes = []
-
-    p = mp.Process(target=test, args=(args.num_processes, args, shared_model))
-    p.start()
-    processes.append(p)
-
-    for rank in range(0, args.num_processes):
-        p = mp.Process(target=train, args=(rank, args, shared_model, optimizer))
-        p.start()
-        processes.append(p)
-    for p in processes:
-        p.join()

@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 universe.configure_logging()
 
-def create_env(env_id, client_id, remotes, **kwargs):
+def create_env(env_id, client_id, remotes):
     spec = gym.spec(env_id)
 
-    return create_flash_env(env_id, client_id, remotes, **kwargs)
+    return create_flash_env(env_id, client_id, remotes)
 
-def create_flash_env(env_id, client_id, remotes, **_):
+def create_flash_env(env_id, client_id, remotes):
     env = gym.make(env_id)
     env = Vision(env)
     env = Logger(env)

@@ -34,6 +34,17 @@
                     <li><a href="A3C">Actor critic</a></li>
                 </ul>
             </div><br>
+            <div class="dropdown">
+                Number of training workers:
+                <button id="btnWorkers" class="btn btn-default dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown">Select number
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu workers">
+                    <li><a href="4">4</a></li>
+                    <li><a href="8">8</a></li>
+                    <li><a href="12">12</a></li>
+                    <li><a href="16">16</a></li>
+                </ul>
+            </div><br>
             <button type="button" class="btn btn-primary btn-lg" id="trainBtn">Train</button> &nbsp;&nbsp;&nbsp;
             <button type="button" class="btn btn-primary btn-lg" id="playBtn">Play</button>
         </div>
