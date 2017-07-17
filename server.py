@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request
 from trainings.A3C_train import A3C_train
 from trainings.ES_train import ES_train
+from play import start_game
 
 
 # create app
@@ -19,7 +20,7 @@ def train():
     """Start training of the network"""
     model = request.form['model']
     env = request.form['env']
-    num_processes = request.form['processes']
+    num_processes = int(request.form['workers'])
     if model == "A3C":
         A3C_train(env, num_processes)
     elif model == "ES":
@@ -30,4 +31,4 @@ def play():
     """Start playing environment"""
     model = request.form['model']
     env = request.form['env']
-    play()
+    start_game(model, env)

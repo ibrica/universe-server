@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import math
+import argparse
 import numpy as np
 import torch
 import torch.legacy.optim as legacyOptim
@@ -11,7 +12,6 @@ from torch.autograd import Variable
 from envs import create_env
 from models.ES import ES
 import matplotlib.pyplot as plt
-import argparse
 
 
 def ES_train(env_name):
@@ -28,11 +28,11 @@ def ES_train(env_name):
     args.variable_ep_len = False # Change max episode length during training
     args.silent = False # Prints during training
 
-    env = create_env(args.env_name, client_id="ES1",remotes=1) # Local docker container
+    env = create_env(args.env_name, client_id="ES1", remotes=1) # Local docker container
     chkpt_dir = 'checkpoints/%s/' % args.env_name
     if not os.path.exists(chkpt_dir):
         os.makedirs(chkpt_dir)
-    synced_model = ES(env.observation_space.shape[0],env.action_space)
+    synced_model = ES(env.observation_space.shape[0], env.action_space)
     for param in synced_model.parameters():
         param.requires_grad = False
     if args.restore:

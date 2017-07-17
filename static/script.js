@@ -2,8 +2,9 @@
          $('#trainBtn').click((e) => {
              //e.preventDefault();
              let model = $('#btnModel').val(),
-                 env = $('#btnEnv').val();
-             $.post('/train', { model, env })
+                 env = $('#btnEnv').val(),
+                 workers = $('#btnWorkers').val();
+             $.post('/train', { model, env, workers })
                  .done((data) => {
                      $("#alerts").append('<div class="alert alert-success"> <strong>Success!</strong> You started training your environment! </div>');
                  })
@@ -23,26 +24,26 @@
                  });
          });
 
-        $(function(){
-            $(".models li a").click(function(e){
-              e.preventDefault();
-              $("#btnModel").html($(this).text()+'<span class="caret"></span>');
-              $("#btnModel").val($(this).attr("href"));
-           });
-        });
+         $(function() {
+             $(".models li a").click(function(e) {
+                 e.preventDefault();
+                 $("#btnModel").html($(this).text() + '<span class="caret"></span>');
+                 $("#btnModel").val($(this).attr("href"));
+             });
+         });
 
-        $(function(){
-            $(".envs li a").click(function(e){
-              e.preventDefault();
-              $("#btnEnv").html($(this).text()+'<span class="caret"></span>');
-              $("#btnEnv").val($(this).attr("href"));
-           });
-        });
-                $(function(){
-            $(".workers li a").click(function(e){
-              e.preventDefault();
-              $("#btnWorkers").html($(this).text()+'<span class="caret"></span>');
-              $("#btnWorkers").val($(this).attr("href"));
-           });
-        });
+         $(function() {
+             $(".envs li a").click(function(e) {
+                 e.preventDefault();
+                 $("#btnEnv").html($(this).text() + '<span class="caret"></span>');
+                 $("#btnEnv").val($(this).attr("href"));
+             });
+         });
+         $(function() {
+             $(".workers li a").click(function(e) {
+                 e.preventDefault();
+                 $("#btnWorkers").html($(this).text() + '<span class="caret"></span>');
+                 $("#btnWorkers").val($(this).attr("href"));
+             });
+         });
      });

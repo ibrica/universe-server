@@ -1,17 +1,18 @@
 import math
 import os
-import sys
+import argparse
+import time
+from collections import deque
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.multiprocessing as mp
+from torch.autograd import Variable
+
 from envs import create_env
 from models.A3C import ActorCritic
-from torch.autograd import Variable
-from torchvision import datasets, transforms
-from envs import create_env
-import argparse
+
 
 
 def A3C_train(env_name, num_processes):
@@ -22,7 +23,7 @@ def A3C_train(env_name, num_processes):
     args.seed = 1 # default should be possible set on web page
     args.env_name = env_name
     args.num_processes = num_processes
-    args.lr = 0.0001 # learnig rate
+    args.lr = 0.0001 # learning rate
     args.gamma = 0.99 # Discount factor for rewards
     args.tau = 1.0 # GAE parameter
     args.num_steps = 20 # Number of forward steps
@@ -30,7 +31,6 @@ def A3C_train(env_name, num_processes):
     args.no_shared = False # Use shared model
     
 
- 
     torch.manual_seed(args.seed)
 
     env = create_env(env_name, client_id="A3C1",remotes=1) # Local docker container
@@ -63,7 +63,7 @@ def ensure_shared_grads(model, shared_model):
 def train(rank, args, shared_model, optimizer=None):
     torch.manual_seed(args.seed + rank)
 
-    env = create_env(args.env_name)
+    env = create_env(args.env_name, client_id="A3C1", remotes=1)
     env.seed(args.seed + rank)
 
     model = ActorCritic(env.observation_space.shape[0], env.action_space)
@@ -151,3 +151,62 @@ def train(rank, args, shared_model, optimizer=None):
 
         ensure_shared_grads(model, shared_model)
         optimizer.step()
+
+
+def test(rank, args, shared_model):
+    torch.manual_seed(args.seed + rank)
+
+    env = create_env(args.env_name, client_id="A3C1",remotes=1)
+    env.seed(args.seed + rank)
+
+    model = ActorCritic(env.observation_space.shape[0], env.action_space)
+
+    model.eval()
+
+    state = env.reset()
+    state = torch.from_numpy(state)
+    reward_sum = 0
+    done = True
+
+    start_time = time.time()
+
+    # a quick hack to prevent the agent from stucking
+    actions = deque(maxlen=100)
+    episode_length = 0
+    while True:
+        episode_length += 1
+        # Sync with the shared model
+        if done:
+            model.load_state_dict(shared_model.state_dict())
+            cx = Variable(torch.zeros(1, 256), volatile=True)
+            hx = Variable(torch.zeros(1, 256), volatile=True)
+        else:
+            cx = Variable(cx.data, volatile=True)
+            hx = Variable(hx.data, volatile=True)
+
+        value, logit, (hx, cx) = model(
+            (Variable(state.unsqueeze(0), volatile=True), (hx, cx)))
+        prob = F.softmax(logit)
+        action = prob.max(1)[1].data.numpy()
+
+        state, reward, done, _ = env.step(action[0, 0])
+        done = done or episode_length >= args.max_episode_length
+        reward_sum += reward
+
+        # a quick hack to prevent the agent from stucking
+        actions.append(action[0, 0])
+        if actions.count(actions[0]) == actions.maxlen:
+            done = True
+
+        if done:
+            print("Time {}, episode reward {}, episode length {}".format(
+                time.strftime("%Hh %Mm %Ss",
+                              time.gmtime(time.time() - start_time)),
+                reward_sum, episode_length))
+            reward_sum = 0
+            episode_length = 0
+            actions.clear()
+            state = env.reset()
+            time.sleep(60)
+
+        state = torch.from_numpy(state)
