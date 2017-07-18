@@ -25,10 +25,13 @@ def train():
         A3C_train(env, num_processes)
     elif model == "ES":
         ES_train(env)
+    return 'Training started'
 
-@app.route('/play', methods = ['POST'] )
+
+@app.route('/play', methods=['POST'])
 def play():
     """Start playing environment"""
     model = request.form['model']
     env = request.form['env']
     start_game(model, env)
+    return 'Play started'

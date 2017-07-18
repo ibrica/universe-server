@@ -17,11 +17,6 @@ logger.setLevel(logging.INFO)
 universe.configure_logging()
 
 def create_env(env_id, client_id, remotes):
-    spec = gym.spec(env_id)
-
-    return create_flash_env(env_id, client_id, remotes)
-
-def create_flash_env(env_id, client_id, remotes):
     env = gym.make(env_id)
     env = Vision(env)
     env = Logger(env)
@@ -45,11 +40,9 @@ def create_flash_env(env_id, client_id, remotes):
     env = Unvectorize(env)
     env.configure(fps=5.0, remotes=remotes, start_timeout=15 * 60, client_id=client_id,
                   vnc_driver='go', vnc_kwargs={
-                    'encoding': 'tight', 'compress_level': 0,
-                    'fine_quality_level': 50, 'subsample_level': 3})
+                      'encoding': 'tight', 'compress_level': 0,
+                      'fine_quality_level': 50, 'subsample_level': 3})
     return env
-
-
 
 
 def DiagnosticsInfo(env, *args, **kwargs):
