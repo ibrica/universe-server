@@ -20,9 +20,9 @@
                 <button id="btnEnv" class="btn btn-default dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown">Choose your environment
                     <span class="caret"></span></button>
                 <ul class="dropdown-menu envs">
-                    <li><a href="pong">Pong</a></li>
                     <li><a href="flashgames.NeonRace-v0">Neon Race</a></li>
                     <li><a href="flashgames.DuskDrive-v0">Dusk drive</a></li>
+                    <li><a href="flashgames.Stalingrad2-v0">Stalingrad 2</a></li>
                 </ul>
             </div><br>
             <div class="dropdown">
@@ -48,9 +48,11 @@
             <button type="button" class="btn btn-primary btn-lg" id="trainBtn">Train</button> &nbsp;&nbsp;&nbsp;
             <button type="button" class="btn btn-primary btn-lg" id="playBtn">Play</button>
         </div>
+        <canvas id="rewardChart" width="800" height="400"></canvas>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 

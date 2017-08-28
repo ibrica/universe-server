@@ -53,6 +53,18 @@ def A3C_train(env_name, num_processes):
     for p in processes:
         p.join()
 
+
+optimConfig = []
+averageReward = []
+maxReward = []
+minReward = []
+episodeCounter = []
+
+def get_rewards():
+    """Return current histogram"""
+    return {'averageReward':averageReward, 'maxReward':maxReward, 'minReward':minReward, 'episodeCounter':minReward}
+
+
 def ensure_shared_grads(model, shared_model):
     for param, shared_param in zip(model.parameters(), shared_model.parameters()):
         if shared_param.grad is not None:

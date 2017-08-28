@@ -1,18 +1,18 @@
-import cv2
-from gym.spaces.box import Box
+import logging
+import time
 import numpy as np
 import gym
 from gym import spaces
-import logging
+from gym.spaces.box import Box
 import universe
 from universe import vectorized
 from universe.wrappers import BlockingReset, GymCoreAction, EpisodeID, Unvectorize, Vectorize, Vision, Logger
 from universe import spaces as vnc_spaces
 from universe.spaces.vnc_event import keycode
-import time
 
 
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("universe-server")
 logger.setLevel(logging.INFO)
 universe.configure_logging()
 

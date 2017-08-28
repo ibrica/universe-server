@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import math
 import argparse
+import logging
 import numpy as np
 import torch
 import torch.legacy.optim as legacyOptim
@@ -11,19 +12,21 @@ import torch.multiprocessing as mp
 from torch.autograd import Variable
 from envs import create_env
 from models.ES import ES
-import matplotlib.pyplot as plt
 
+#logger
+logger = logging.getLogger("universe-server")
+logger.setLevel(logging.INFO)
 
 def ES_train(env_name):
     # set parameters as namespace object and give them values
     args = argparse.Namespace()
     args.env_name = env_name
-    args.lr = 0.3 # learnig rate
+    args.lr = 0.3 # learning rate
     args.lr_decay = 1 #learning rate decay
     args.sigma = 0.05 # noise standard deviation
     args.n = 40 # batch size (even number)
-    args.max_episode_length = 100000 # maximum length of an episode 
-    args.max_gradient_updates = 100000
+    args.max_episode_length = 10 # maximum length of an episode 100000
+    args.max_gradient_updates = 10 # 100000
     args.restore = '' # restore checkpoint
     args.variable_ep_len = False # Change max episode length during training
     args.silent = False # Prints during training
@@ -42,9 +45,7 @@ def ES_train(env_name):
 
 def do_rollouts(args, models, random_seeds, return_queue, env, are_negative):
     """
-    For each model, do a rollout. Supports multiple models per thread but
-    don't do it -- it's inefficient (it's mostly a relic of when I would run
-    both a perturbation and its antithesis on the same thread).
+    For each model, do a rollout.
     """
     all_returns = []
     all_num_frames = []
@@ -63,6 +64,7 @@ def do_rollouts(args, models, random_seeds, return_queue, env, are_negative):
             prob = F.softmax(logit)
             action = prob.max(1)[1].data.numpy()
             state, reward, done, _ = env.step(action[0, 0])
+            logger.info()
             this_model_return += reward
             this_model_num_frames += 1
             if done:
@@ -100,6 +102,10 @@ maxReward = []
 minReward = []
 episodeCounter = []
 
+def get_rewards():
+    """Return current histogram"""
+    return {'averageReward':averageReward, 'maxReward':maxReward, 'minReward':minReward, 'episodeCounter':minReward}
+
 
 def gradient_update(args, synced_model, returns, random_seeds, neg_list,
                     num_eps, num_frames, chkpt_dir, unperturbed_results):
@@ -135,7 +141,7 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
     assert len(random_seeds) == batch_size
     shaped_returns = fitness_shaping(returns)
     rank_diag, rank = unperturbed_rank(returns, unperturbed_results)
-    print('Episode num: %d\n'
+    logger.info('Episode num: %d\n'
           'Average reward: %f\n'
           'Variance in rewards: %f\n'
           'Max reward: %f\n'
@@ -156,19 +162,6 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
     episodeCounter.append(num_eps)
     maxReward.append(max(returns))
     minReward.append(min(returns))
-
-    pltAvg, = plt.plot(episodeCounter, averageReward, label='average')
-    pltMax, = plt.plot(episodeCounter, maxReward,  label='max')
-    pltMin, = plt.plot(episodeCounter, minReward,  label='min')
-
-    plt.ylabel('rewards')
-    plt.xlabel('episode num')
-    plt.legend(handles=[pltAvg, pltMax,pltMin])
-
-    fig1 = plt.gcf()
-
-    plt.draw()
-    fig1.savefig('graph.png', dpi=100)
 
     # For each model, generate the same random numbers as we did
     # before, and update parameters. We apply weight decay once.
@@ -200,7 +193,7 @@ def train_loop(args, synced_model, env, chkpt_dir):
     def flatten(raw_results, index):
         notflat_results = [result[index] for result in raw_results]
         return [item for sublist in notflat_results for item in sublist]
-    print("Num params in network %d" % synced_model.count_parameters())
+    logger.info("Num params in network %d" % synced_model.count_parameters())
     num_eps = 0
     total_num_frames = 0
     for _ in range(args.max_gradient_updates):
