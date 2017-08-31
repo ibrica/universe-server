@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from multiprocessing import Process
 import math
 import argparse
 import logging
 import numpy as np
 import torch
-import torch.legacy.optim as legacyOptim
 import torch.nn.functional as F
 import torch.multiprocessing as mp
 from torch.autograd import Variable
@@ -18,6 +18,12 @@ logger = logging.getLogger("universe-server")
 logger.setLevel(logging.INFO)
 
 def ES_train(env_name):
+    """Train Evolution Strategies model in separate process not to block Flask"""
+    p = Process(target=train_model, args=(env_name,1))
+    p.start()
+
+def train_model(env_name, num_threads):
+    """Train and save the model"""
     # set parameters as namespace object and give them values
     args = argparse.Namespace()
     args.env_name = env_name
@@ -102,9 +108,6 @@ maxReward = []
 minReward = []
 episodeCounter = []
 
-def get_rewards():
-    """Return current histogram"""
-    return {'averageReward':averageReward, 'maxReward':maxReward, 'minReward':minReward, 'episodeCounter':minReward}
 
 
 def gradient_update(args, synced_model, returns, random_seeds, neg_list,
@@ -141,7 +144,7 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
     assert len(random_seeds) == batch_size
     shaped_returns = fitness_shaping(returns)
     rank_diag, rank = unperturbed_rank(returns, unperturbed_results)
-    logger.info('Episode num: %d\n'
+    print('Episode num: %d\n'
           'Average reward: %f\n'
           'Variance in rewards: %f\n'
           'Max reward: %f\n'

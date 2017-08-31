@@ -1,5 +1,5 @@
-import math
 import os
+from multiprocessing import Process
 import argparse
 import time
 from collections import deque
@@ -13,10 +13,15 @@ from torch.autograd import Variable
 from envs import create_env
 from models.A3C import ActorCritic
 
+def A3C_train(env_name, num_process):
+    """Train Actor to Critic model in separate process so Flask is responsive"""
+    p = Process(target=train_model, args=(env_name,num_process))
+    p.start()
 
 
-def A3C_train(env_name, num_processes):
-    os.environ['OMP_NUM_THREADS'] = '1'
+def train_model(env_name, num_processes):
+    """Start training of the model"""
+    os.environ['OMP_NUM_THREADS'] = '1' #Use one thread per process
 
     # set parameters as namespace object and give them values
     args = argparse.Namespace()

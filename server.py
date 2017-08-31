@@ -1,13 +1,15 @@
-# imports
+"""
+Flask server for web interface
+"""
 import logging
 from flask import Flask, render_template, request
-from trainings.A3C_train import A3C_train
-from trainings.A3C_train import get_rewards as A3C_rewards
-from trainings.ES_train import ES_train
-from trainings.ES_train import get_rewards as ES_rewards
-from play import start_game
 from flask import jsonify
 from flask import abort
+from trainings.A3C_train import A3C_train
+from trainings.ES_train import ES_train
+from play import start_game
+from data.rewards import get_rewards
+
 
 #logger
 logger = logging.getLogger("universe-server")
@@ -48,13 +50,10 @@ def play():
 @app.route('/data/<model>')
 def get_data(model):
     """Return current reward data for the chart"""
-    data = {}
-    if model == "A3C":
-        data = A3C_rewards()
-    elif model == "ES":
-        data = ES_rewards()
+    if model in ("A3C", "ES" ):
+        return jsonify(get_rewards())
     else:
         abort(400)
     
-    return jsonify(data)
+
 

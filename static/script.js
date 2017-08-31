@@ -7,6 +7,7 @@
              $.post('/train', { model, env, workers })
                  .done((data) => {
                      $("#alerts").append('<div class="alert alert-success"> <strong>Success!</strong> You started training your environment! </div>');
+                     drawRewardChart();
                  })
                  .fail(function() {
                      $("#alerts").append('<div class="alert alert-danger"><strong>Error!</strong> Training couldn\'t be started! </div>');
@@ -55,8 +56,9 @@
              purple: 'rgb(153, 102, 255)',
              grey: 'rgb(201, 203, 207)'
          };
-         let ctx = $("#rewardChart");
-         $(function() {
+
+         const drawRewardChart = () => {
+             const ctx = $("#rewardChart");
              setInterval(() => {
                  let model = $('#btnModel').val();
                  $.get(`/data/${model}`, function(data) {
@@ -134,5 +136,6 @@
 
                  });
              }, 60000); //Every minute new update of the chart
-         })
+         };
+
      });
